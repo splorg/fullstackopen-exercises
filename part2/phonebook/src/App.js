@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import PersonFilter from './components/PersonFilter'
-import PersonsForm from './components/PersonsForm'
-import PersonsList from './components/PersonsList'
+import PersonForm from './components/PersonForm'
+import PersonList from './components/PersonList'
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -62,14 +62,14 @@ const App = () => {
     <div>
       <h1>Phonebook</h1>
       <PersonFilter filter={filter} setFilter={handleFilter} />
-      <PersonsForm 
+      <PersonForm 
         title="add new person" 
         setName={handleNewName} 
         setNumber={handleNewNumber} 
         name={newName} number={newNumber} 
         setPerson={addPerson} 
       />
-      <PersonsList 
+      <PersonList 
         title="numbers"
         filter={filter}
         persons={persons}

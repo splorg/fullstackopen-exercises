@@ -4,7 +4,7 @@ const Person = ({ person }) => (
   <p>{person.name} - {person.number}</p>
 )
 
-const PersonsList = ({ title, filter, persons, visiblePersons }) => {
+const PersonList = ({ title, filter, persons, visiblePersons }) => {
   return (
     <>
       <Header title={title} />
@@ -16,4 +16,4 @@ const PersonsList = ({ title, filter, persons, visiblePersons }) => {
   )
 }
 
-export default PersonsList
+export default PersonList

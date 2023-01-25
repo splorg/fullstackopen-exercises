@@ -1,6 +1,6 @@
 import Header from "./Header"
 
-const PersonsForm = ({ title, setPerson, name, setName, number, setNumber }) => {
+const PersonForm = ({ title, setPerson, name, setName, number, setNumber }) => {
   return (
     <>
       <Header title={title}/>
@@ -19,4 +19,4 @@ const PersonsForm = ({ title, setPerson, name, setName, number, setNumber }) => 
   )
 }
 
-export default PersonsForm
+export default PersonForm
