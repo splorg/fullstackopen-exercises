@@ -1,20 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+import personService from './services/persons'
 
 import PersonFilter from './components/PersonFilter'
 import PersonForm from './components/PersonForm'
 import PersonList from './components/PersonList'
+import Notification from './components/Notification'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [visiblePersons, setVisiblePersons] = useState(persons)
+  const [message, setMessage] = useState({})
 
   const handleNewName = (e) => {
     setNewName(e.target.value)
@@ -29,38 +29,113 @@ const App = () => {
     setVisiblePersons(persons.filter(person => (person.name.toLowerCase().indexOf(e.target.value.toLowerCase()) !== -1)))
   }
 
+  const handleMessage = (msg, type) => {
+    const messageObject = {
+      message: msg,
+      type
+    }
+    
+    setMessage(messageObject)
+
+    setTimeout(() => {
+      setMessage({})
+    }, 3500)
+  }
+
   const addPerson = (e) => {
     e.preventDefault()
 
-    if (persons.filter(person => person.name === newName).length) {
-      alert(`${newName} is already in the phonebook`)
-      setNewName('')
-      setNewNumber('')
-      return
+    const person = persons.find(person => person.name === newName)
+
+    if (person) {
+      if (window.confirm(`${person.name} is already added to phonebook, replace the old number with a new one?`)) {
+        const updatedPerson = { ...person, number: newNumber }
+
+        personService
+          .update(person.id, updatedPerson)
+          .then(() => {
+            personService
+              .getAll()
+              .then(newPersonsArray => {
+                handleMessage(`${person.name} has been updated`, 'success')
+                setPersons(newPersonsArray)
+                setNewName('')
+                setNewNumber('')
+              })
+          })
+          .catch(error => {
+            handleMessage(`${person.name} could not be found in the server`, 'error')
+            console.log(error)
+            personService
+              .getAll()
+              .then(newPersonsArray => {
+                setPersons(newPersonsArray)
+                setNewName('')
+                setNewNumber('')
+              })
+          })
+      }
+    } else {
+      const newPerson = {
+        name: newName,
+        number: newNumber
+      }
+  
+      personService
+        .create(newPerson)
+        .then(addedPerson => {
+          handleMessage(`added ${addedPerson.name}`, 'success')
+          setPersons(persons.concat(addedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch(error => {
+          handleMessage(`failed to add ${newPerson.name}`, 'error')
+          console.log(error)
+          setNewName('')
+          setNewNumber('')
+        })
     }
-
-    if (persons.filter(person => person.number === newNumber).length) {
-      alert(`${newNumber} is already in the phonebook`)
-      setNewName('')
-      setNewNumber('')
-      return
-    }
-
-    const newPerson = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1
-    }
-
-    setPersons(persons.concat(newPerson))
-
-    setNewName('')
-    setNewNumber('')
   }
+
+  const handleDelete = (id) => {
+    const person = persons.find(person => person.id === id)
+
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personService
+        .deletePerson(person.id)
+        .then(() => {
+          handleMessage(`${person.name} has been deleted`, 'success')
+          personService
+            .getAll()
+            .then(newPersonsArray => {
+              setPersons(newPersonsArray)
+            })
+        })
+        .catch(error => {
+          handleMessage(`${person.name} has already been removed from the server`, 'error')
+          console.log(error)
+          setPersons(persons.filter(p => p.id !== person.id))
+        })
+    }
+  }
+
+  useEffect(() => {
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+      })
+      .catch(error => {
+        handleMessage('failed to load contacts', 'error')
+        console.log(error)
+      })
+  }, [])
 
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification message={message.message} type={message.type} />
       <PersonFilter filter={filter} setFilter={handleFilter} />
       <PersonForm 
         title="add new person" 
@@ -74,6 +149,7 @@ const App = () => {
         filter={filter}
         persons={persons}
         visiblePersons={visiblePersons}
+        onDelete={handleDelete}
       />
     </div>
   )

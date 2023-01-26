@@ -6,10 +6,10 @@ const PersonForm = ({ title, setPerson, name, setName, number, setNumber }) => {
       <Header title={title}/>
       <form onSubmit={setPerson}>
         <div>
-          name: <input value={name} onChange={setName} />
+          name: <input required value={name} onChange={setName} />
         </div>
         <div>
-          number: <input value={number} onChange={setNumber} />
+          number: <input required value={number} onChange={setNumber} />
         </div>
         <div>
           <button type='submit'>add</button>
