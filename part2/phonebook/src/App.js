@@ -64,7 +64,7 @@ const App = () => {
               })
           })
           .catch(error => {
-            handleMessage(`${person.name} could not be found in the server`, 'error')
+            handleMessage(`${error.response.data.error}`, 'error')
             console.log(error)
             personService
               .getAll()
@@ -85,12 +85,16 @@ const App = () => {
         .create(newPerson)
         .then(addedPerson => {
           handleMessage(`added ${addedPerson.name}`, 'success')
-          setPersons(persons.concat(addedPerson))
-          setNewName('')
-          setNewNumber('')
+          personService
+            .getAll()
+            .then(newPersonsArray => {
+              setPersons(newPersonsArray)
+              setNewName('')
+              setNewNumber('')
+            })
         })
         .catch(error => {
-          handleMessage(`failed to add ${newPerson.name}`, 'error')
+          handleMessage(`${error.response.data.error}`, 'error')
           console.log(error)
           setNewName('')
           setNewNumber('')
